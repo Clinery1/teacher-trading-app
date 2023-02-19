@@ -9,8 +9,8 @@ const postSchema = new Schema(
         itemName: {
             type: String,
             required: true,
-            maxlength: 100,
-            minlength: 2,
+            maxLength: 100,
+            minLength: 2,
             default: 'Unnamed item',
             trim: true,
         },
@@ -23,10 +23,6 @@ const postSchema = new Schema(
             type: Date,
             default: Date.now,
         },
-        requests: [{
-            type: Schema.Types.ObjectId,
-            ref: "PostRequest",
-        }],
     },
     {
         toJSON: {

@@ -16,6 +16,14 @@ const postRequestSchema = new Schema(
             type: Number,
             required: true,
         },
+        reviewed: {
+            type: Boolean,
+            default: ()=>false,
+        },
+        accepted: {
+            type: Boolean,
+            default: ()=>false,
+        },
     },
     {
         toJSON: {

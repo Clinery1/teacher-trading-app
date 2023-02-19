@@ -4,49 +4,40 @@ const bcrypt = require('bcrypt');
 // Schema to create Teacher model
 const teacherSchema = new Schema(
     {
-        last_session_id: {
+        lastSessionId: {
             type: String,
             default: () => "",
         },
         username: {
             type: String,
             required: true,
-            max_length: 50,
+            maxLength: 50,
             unique: true,
             trim: true,
         },
         first: {
             type: String,
             required: true,
-            max_length: 50,
+            maxLength: 50,
             trim: true,
         },
         last: {
             type: String,
             required: true,
-            max_length: 50,
+            maxLength: 50,
             trim: true,
         },
         school: {
             type: String,
             required: true,
-            max_length: 100,
+            maxLength: 100,
             trim: true,
         },
         password: {
             type: String,
             required: true,
-            min_length: 5,
+            minLength: 5,
         },
-        supply_posts: [{
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "Post",
-        }],
-        requests: [{
-            type: Schema.Types.ObjectId,
-            ref: "PostRequest",
-        }],
     },
     {
         toJSON: {

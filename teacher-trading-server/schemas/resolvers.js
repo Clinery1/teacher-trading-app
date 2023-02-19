@@ -1,6 +1,6 @@
 const { AuthenticationError } = require('apollo-server-express');
 const { Teacher, Post, PostRequest } = require('../models');
-const { signToken } = require('../utils/auth');
+const { signToken, verifyToken } = require('../utils/auth');
 
 const resolvers = {
     Query: {
@@ -61,13 +61,7 @@ const resolvers = {
             const teacher = await Teacher.create(args);
             const token = signToken(teacher);
 
-            // update the session token
-            await Teacher.findOneAndUpdate(
-                {_id:teacher._id},
-                {lastSessionId: token},
-            );
-
-            return {token, teacher};
+            return token;
         },
 
         login: async (_,{username, password}) => {
@@ -85,20 +79,14 @@ const resolvers = {
 
             const token = signToken(teacher);
 
-            // update the session token
-            await Teacher.findOneAndUpdate(
-                {_id:teacher._id},
-                {lastSessionId: token},
-            );
-
-            return {token, teacher};
+            return token;
         },
 
-        createPost: async (_,{userAuth,itemName,itemQuantity}) => {
-            await authenticateUser(userAuth);
+        createPost: async (_,{token,itemName,itemQuantity}) => {
+            const teacher = verifyToken(token);
 
             const post = await Post.create({
-                teacherId: userAuth.id,
+                teacherId: teacher._id,
                 itemName,
                 itemQuantity,
             });
@@ -106,8 +94,8 @@ const resolvers = {
             return post;
         },
 
-        applyForSupply: async (_,{userAuth,postId,count}) => {
-            await authenticateUser(userAuth);
+        applyForSupply: async (_,{token,postId,count}) => {
+            const teacher = verifyToken(token);
             const post = await Post.findOne({_id: postId});
 
             // check if the post and the teacher exist
@@ -116,12 +104,12 @@ const resolvers = {
             }
 
             // check if the teacher asking and the post's teacher are the same
-            if (post.teacherId==userAuth.id) {
+            if (post.teacherId==teacher._id) {
                 throw new AuthenticationError("Cannot apply for your own post");
             }
 
             const request = await PostRequest.create({
-                teacherId: userAuth.id,
+                teacherId: teacher._id,
                 postId,
                 count,
             });
@@ -129,29 +117,29 @@ const resolvers = {
             return request;
         },
 
-        supplyAccept: async (_,{userAuth,requestId}) => {
-            await authenticateUser(userAuth);
+        supplyAccept: async (_,{token,requestId}) => {
+            const teacher = verifyToken(token);
 
             const request = await PostRequest.findOne({_id: requestId});
 
             if (!request) {
-                throw AuthenticationError("There is not a request with this ID");
+                throw new AuthenticationError("There is not a request with this ID");
             }
 
             const post = await Post.findOne({_id: request.postId});
 
             if (!post) {
-                throw AuthenticationError("The post tied to the request was deleted");
+                throw new AuthenticationError("The post tied to the request was deleted");
             }
 
-            if (post.teacherId!=userAuth.id) {
-                throw AuthenticationError("Cannot accept a request for another person's post");
+            if (post.teacherId!=teacher._id) {
+                throw new AuthenticationError("Cannot accept a request for another person's post");
             }
 
             const remainingQuantity = post.itemQuantity-request.count;
 
             if (remainingQuantity<0) {
-                throw AuthenticationError("Cannot accept a request for more that what is listed");
+                throw new AuthenticationError("Cannot accept a request for more that what is listed");
             }
 
             await Post.findOneAndUpdate(
@@ -166,13 +154,23 @@ const resolvers = {
             );
         },
 
-        supplyDeny: async (_,{userAuth,requestId}) => {
-            await authenticateUser(userAuth);
+        supplyDeny: async (_,{token,requestId}) => {
+            const teacher = verifyToken(token);
 
             const request = await PostRequest.findOne({_id: requestId});
 
             if (!request) {
-                throw AuthenticationError("There is not a request with this ID");
+                throw new AuthenticationError("There is not a request with this ID");
+            }
+
+            const post = await Post.findOne({_id: request.postId});
+
+            if (!post) {
+                throw new AuthenticationError("The post tied to the request was deleted");
+            }
+
+            if (post.teacherId!=teacher._id) {
+                throw new AuthenticationError("Cannot accept a request for another person's post");
             }
 
             return await PostRequest.findOneAndUpdate(
@@ -182,18 +180,18 @@ const resolvers = {
             );
         },
 
-        removePost: async (_,{userAuth,postId}) => {
-            await authenticateUser(userAuth);
+        removePost: async (_,{token,postId}) => {
+            const teacher = verifyToken(token);
 
             const post = await Post.findOne({_id: postId});
 
             if (!post) {
-                throw AuthenticationError("There is not a post with this ID");
+                throw new AuthenticationError("There is not a post with this ID");
             }
 
             // check if the user is the owner of the post
-            if (post.teacherId!=userAuth.id) {
-                throw AuthenticationError("Cannot remove another person's post");
+            if (post.teacherId!=teacher._id) {
+                throw new AuthenticationError("Cannot remove another person's post");
             }
 
             // deny all of the associated requests
@@ -207,18 +205,18 @@ const resolvers = {
             return post._id;
         },
 
-        removeRequest: async (_,{userAuth,requestId}) => {
-            await authenticateUser(userAuth);
+        removeRequest: async (_,{token,requestId}) => {
+            const teacher = verifyToken(token);
 
             const request = await PostRequest.findOne({_id: requestId});
 
             if (!request) {
-                throw AuthenticationError("There is not a request with this ID");
+                throw new AuthenticationError("There is not a request with this ID");
             }
 
             // check if the user is the owner of the request
-            if (request.teacherId!=userAuth.id) {
-                throw AuthenticationError("Cannot remove another person's request");
+            if (request.teacherId!=teacher._id) {
+                throw new AuthenticationError("Cannot remove another person's request");
             }
 
             await PostRequest.findOneAndDelete({_id: requestId});
@@ -226,18 +224,18 @@ const resolvers = {
             return request._id;
         },
 
-        postUpdateQuantity: async (_,{userAuth,postId,newQuantity}) => {
-            await authenticateUser(userAuth);
+        postUpdateQuantity: async (_,{token,postId,newQuantity}) => {
+            const teacher = verifyToken(token);
 
             const post = await Post.findOne({_id: postId});
 
             if (!post) {
-                throw AuthenticationError("There is not a post with this ID");
+                throw new AuthenticationError("There is not a post with this ID");
             }
 
             // check if the user is the owner of the request
-            if (post.teacherId!=userAuth.id) {
-                throw AuthenticationError("Cannot update another person's post");
+            if (post.teacherId!=teacher._id) {
+                throw new AuthenticationError("Cannot update another person's post");
             }
 
             return await Post.findOneAndUpdate(
@@ -249,22 +247,5 @@ const resolvers = {
     },
 };
 
-
-/// authenticateUser(auth:{token:String,id:String}): Teacher
-async function authenticateUser(auth) {
-    const {token,id}=auth;
-    const user = await Teacher.findOne({_id: id});
-
-    if (!user) {
-        throw new AuthenticationError("There is no teacher with this ID");
-    }
-
-    // check the auth token to make sure the user is actually who they say they are
-    if (token!=user.lastSessionId) {
-        throw new AuthenticationError("Invalid auth token");
-    }
-
-    return user;
-}
 
 module.exports = resolvers;

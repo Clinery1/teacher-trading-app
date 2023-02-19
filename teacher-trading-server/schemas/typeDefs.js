@@ -25,16 +25,6 @@ const typeDefs = gql`
         accepted: Boolean
     }
 
-    type Auth {
-        token: ID!
-        teacher: Teacher!
-    }
-
-    input UserAuth {
-        token: ID!
-        id: ID!
-    }
-
     type Query {
         allTeachers(page: Int!): [Teacher!]
         allPosts(page: Int!): [Post!]
@@ -51,15 +41,15 @@ const typeDefs = gql`
     }
 
     type Mutation {
-        createTeacher(username: String!, first: String!, last: String!, school: String!, password: String!): Auth
-        login(username: String!, password: String!): Auth
-        createPost(userAuth: UserAuth!, itemName: String!, itemQuantity: Int!): Post
-        applyForSupply(userAuth: UserAuth!, postId: ID!, count: Int!): PostRequest
-        supplyAccept(userAuth: UserAuth!, requestId: ID!): PostRequest
-        supplyDeny(userAuth: UserAuth!, requestId: ID!): PostRequest
-        removePost(userAuth: UserAuth!, postId: ID!): ID
-        removeRequest(userAuth: UserAuth!, requestId: ID!): ID
-        postUpdateQuantity(userAuth: UserAuth!, postId: ID!, newQuantity: Int!): Post
+        createTeacher(username: String!, first: String!, last: String!, school: String!, password: String!): ID
+        login(username: String!, password: String!): ID
+        createPost(token: ID!, itemName: String!, itemQuantity: Int!): Post
+        applyForSupply(token: ID!, postId: ID!, count: Int!): PostRequest
+        supplyAccept(token: ID!, requestId: ID!): PostRequest
+        supplyDeny(token: ID!, requestId: ID!): PostRequest
+        removePost(token: ID!, postId: ID!): ID
+        removeRequest(token: ID!, requestId: ID!): ID
+        postUpdateQuantity(token: ID!, postId: ID!, newQuantity: Int!): Post
     }
 `;
 

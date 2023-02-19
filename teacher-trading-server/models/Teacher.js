@@ -4,10 +4,6 @@ const bcrypt = require('bcrypt');
 // Schema to create Teacher model
 const teacherSchema = new Schema(
     {
-        lastSessionId: {
-            type: String,
-            default: () => "",
-        },
         username: {
             type: String,
             required: true,

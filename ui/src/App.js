@@ -1,56 +1,57 @@
-import React from 'react';
+import React from "react";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+} from "react-router-dom";
 import {
     ChakraProvider,
-    Box,
-    Text,
-    Link,
-    VStack,
-    Code,
-    Grid,
-    theme,
-} from '@chakra-ui/react';
+    Flex,
+    extendTheme,
+} from "@chakra-ui/react";
 import {
     ApolloClient,
     ApolloProvider,
     InMemoryCache,
-} from '@apollo/client';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
+} from "@apollo/client";
+import Header from "./components/Header";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Posts from "./pages/Posts";
+import CreatePost from "./pages/CreatePost";
+import Home from "./pages/Home";
 
 
-const apollo_client = new ApolloClient({
-    uri: '/graphql',
-    cache: new InMemoryCache(),
-});
 
 
-function App() {
+export default () => {
+    const apollo_client = new ApolloClient({
+        uri: "/graphql",
+        cache: new InMemoryCache(),
+    });
+
+    const config={
+        initialColorMode: "dark",
+    };
+
+    const theme=extendTheme({config});
+
     return (
         <ApolloProvider client={apollo_client}>
             <ChakraProvider theme={theme}>
-                <Box textAlign="center" fontSize="xl">
-                    <Grid minH="100vh" p={3}>
-                        <ColorModeSwitcher justifySelf="flex-end" />
-                        <VStack spacing={8}>
-                            <Logo h="40vmin" pointerEvents="none" />
-                            <Text>
-                                Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-                            </Text>
-                            <Link
-                                color="teal.500"
-                                href="https://chakra-ui.com"
-                                fontSize="2xl"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                Learn Chakra
-                            </Link>
-                        </VStack>
-                    </Grid>
-                </Box>
+                <Router>
+                    <Flex flexDirection="column">
+                        <Header />
+                        <Routes>
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/signup" element={<Signup />} />
+                            <Route path="/listings" element={<Posts />} />
+                            <Route path="/create_post" element={<CreatePost />} />
+                            <Route path="/" element={<Home />} />
+                        </Routes>
+                    </Flex>
+                </Router>
             </ChakraProvider>
         </ApolloProvider>
     );
-}
-
-export default App;
+};

@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const postSchema = new Schema(
     {
@@ -11,13 +11,21 @@ const postSchema = new Schema(
             required: true,
             maxLength: 100,
             minLength: 2,
-            default: 'Unnamed item',
+            default: "Unnamed item",
             trim: true,
         },
         itemQuantity: {
             type: Number,
             required: true,
             default: 0,
+        },
+        category: {
+            type: String,
+            required: true,
+            maxLength: 50,
+            minLength: 2,
+            default: "other",
+            trim: true,
         },
         createdAt: {
             type: Date,
@@ -32,6 +40,6 @@ const postSchema = new Schema(
     }
 );
 
-const Post = model('Post', postSchema);
+const Post = model("Post", postSchema);
 
 module.exports = Post;

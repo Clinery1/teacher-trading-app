@@ -1,4 +1,3 @@
-import React from "react";
 import {Link as ReactLink} from "react-router-dom";
 import {
     Text,
@@ -19,8 +18,8 @@ import {
     useBreakpointValue,
 } from "@chakra-ui/react";
 import Auth from "../utils/auth";
-import { ColorModeSwitcher } from "../ColorModeSwitcher";
-import { FaBars } from 'react-icons/fa';
+import {ColorModeSwitcher} from "../ColorModeSwitcher";
+import {FaBars} from 'react-icons/fa';
 
 
 export default () => {
@@ -35,7 +34,7 @@ export default () => {
                     <Button width="min-content" onClick={onClose} as={ReactLink} to="/create_post">
                         Create supply post
                     </Button>
-                    <Button width="min-content" as={ReactLink} onClick={function(){Auth.logout();onClose()}}>
+                    <Button width="min-content" as={ReactLink} onClick={function(){Auth.logout();onClose();window.location="/"}}>
                         Logout
                     </Button>
                 </>

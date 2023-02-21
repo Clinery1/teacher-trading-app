@@ -20,8 +20,7 @@ import Signup from "./pages/Signup";
 import Posts from "./pages/Posts";
 import CreatePost from "./pages/CreatePost";
 import Home from "./pages/Home";
-
-
+import PostId from "./pages/PostId";
 
 
 export default () => {
@@ -46,6 +45,7 @@ export default () => {
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/listings" element={<Posts />} />
+                            <Route path="/listing/:postId" element={<PostId />} />
                             <Route path="/create_post" element={<CreatePost />} />
                             <Route path="/" element={<Home />} />
                         </Routes>

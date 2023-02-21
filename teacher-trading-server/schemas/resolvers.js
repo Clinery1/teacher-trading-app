@@ -1,59 +1,111 @@
-const { AuthenticationError } = require('apollo-server-express');
-const { Teacher, Post, PostRequest } = require('../models');
-const { signToken, verifyToken } = require('../utils/auth');
+const { AuthenticationError } = require("apollo-server-express");
+const { Teacher, Post, PostRequest } = require("../models");
+const { signToken, verifyToken } = require("../utils/auth");
 
 const resolvers = {
     Query: {
         allTeachers: async (_,{page}) => {
-            const limit=100;
-            const skip=page*limit;
-            return Teacher.find({},null,{limit,skip});
+            const limit = 100;
+            const skip = page*limit;
+            return await Teacher.find({},null,{limit,skip});
         },
 
-        allPosts: async (_,{page}) => {
-            const limit=100;
-            const skip=page*limit;
-            return Post.find({},null,{limit,skip});
+        allPosts: async (_,{page,category}) => {
+            console.log(category);
+            let teacherIds = {};
+            const limit = 100;
+            const skip = page*limit;
+            let query = {};
+            if (category) {
+                query.category = category;
+            }
+            let posts = await Post.find(query,null,{limit,skip});
+            for (let i=0;i<posts.length;i+=1) {
+                let id = posts[i].teacherId;
+                if (!teacherIds[id]) {
+                    teacherIds[id] = await Teacher.findOne({_id: id});
+                }
+                posts[i] = {
+                    teacher: teacherIds[id],
+                    ...posts[i]._doc,
+                };
+            }
+
+            return posts;
         },
 
         teacherFirstName: async (_,{first}) => {
-            return Teacher.find({first});
+            return await Teacher.find({first});
         },
 
         teacherLastName: async (_,{last}) => {
-            return Teacher.find({last});
+            return await Teacher.find({last});
         },
 
         teacherFirstLastName: async (_,{first,last}) => {
-            return Teacher.find({first,last});
+            return await Teacher.find({first,last});
         },
 
         teacherUsername: async (_,{username}) => {
-            return Teacher.findOne({username});
+            return await Teacher.findOne({username});
         },
 
         teacher: async (_,{_id}) => {
-            return Teacher.findOne({_id});
+            return await Teacher.findOne({_id});
         },
 
         postsForTeacher: async (_,{teacherId}) => {
-            return await Post.find({teacherId});
+            const teacher = await Teacher.findOne({_id: teacherId});
+            return (await Post.find({teacherId}))
+                .map(function(post,_) {
+                    return {
+                        teacher,
+                        ...post,
+                    };
+                });
         },
 
         requestsForTeacher: async (_,{teacherId}) => {
             return await PostRequest.find({teacherId});
         },
 
+        requestsForPost: async (_,{postId}) => {
+            let teacherIds = {};
+            let requests = await PostRequest.find({postId});
+            for (let i=0;i<requests.length;i+=1) {
+                let id = requests[i].teacherId;
+                if (!teacherIds[id]) {
+                    teacherIds[id] = await Teacher.findOne({_id: id});
+                }
+                requests[i] = {
+                    teacher: teacherIds[id],
+                    ...requests[i]._doc,
+                };
+            }
+
+            return requests;
+        },
+
         postItem: async (_,{itemName}) => {
-            return Post.find({itemName});
+            return await Post.find({itemName});
         },
 
         post: async (_,{_id}) => {
-            return Post.findOne({_id});
+            const post = await Post.findOne({_id});
+            const id = post.teacherId;
+
+            const teacher = await Teacher.findOne({_id: id});
+
+            const ret = {
+                teacher,
+                ...post._doc,
+            };
+
+            return ret;
         },
 
         request: async (_,{_id}) => {
-            return PostRequest.findOne({_id});
+            return await PostRequest.findOne({_id});
         },
     },
     Mutation: {
@@ -61,7 +113,7 @@ const resolvers = {
             const teacher = await Teacher.create(args);
             const token = signToken(teacher);
 
-            return token;
+            return {token,user:teacher};
         },
 
         login: async (_,{username, password}) => {
@@ -79,23 +131,29 @@ const resolvers = {
 
             const token = signToken(teacher);
 
-            return token;
+            return {token,user:teacher};
         },
 
-        createPost: async (_,{token,itemName,itemQuantity}) => {
-            const teacher = verifyToken(token);
+        createPost: async (_,{token,itemName,itemQuantity,category}) => {
+            const teacher = await authenticateUser(token);
 
             const post = await Post.create({
                 teacherId: teacher._id,
                 itemName,
                 itemQuantity,
+                category,
             });
 
-            return post;
+            const ret = {
+                teacher,
+                ...post._doc,
+            };
+
+            return ret;
         },
 
         applyForSupply: async (_,{token,postId,count}) => {
-            const teacher = verifyToken(token);
+            const teacher = await authenticateUser(token);
             const post = await Post.findOne({_id: postId});
 
             // check if the post and the teacher exist
@@ -118,7 +176,7 @@ const resolvers = {
         },
 
         supplyAccept: async (_,{token,requestId}) => {
-            const teacher = verifyToken(token);
+            const teacher = await authenticateUser(token);
 
             const request = await PostRequest.findOne({_id: requestId});
 
@@ -155,7 +213,7 @@ const resolvers = {
         },
 
         supplyDeny: async (_,{token,requestId}) => {
-            const teacher = verifyToken(token);
+            const teacher = await authenticateUser(token);
 
             const request = await PostRequest.findOne({_id: requestId});
 
@@ -181,7 +239,7 @@ const resolvers = {
         },
 
         removePost: async (_,{token,postId}) => {
-            const teacher = verifyToken(token);
+            const teacher = await authenticateUser(token);
 
             const post = await Post.findOne({_id: postId});
 
@@ -206,7 +264,7 @@ const resolvers = {
         },
 
         removeRequest: async (_,{token,requestId}) => {
-            const teacher = verifyToken(token);
+            const teacher = await authenticateUser(token);
 
             const request = await PostRequest.findOne({_id: requestId});
 
@@ -225,7 +283,7 @@ const resolvers = {
         },
 
         postUpdateQuantity: async (_,{token,postId,newQuantity}) => {
-            const teacher = verifyToken(token);
+            const teacher = await authenticateUser(token);
 
             const post = await Post.findOne({_id: postId});
 
@@ -246,6 +304,17 @@ const resolvers = {
         },
     },
 };
+
+
+async function authenticateUser(token) {
+    const teacher = verifyToken(token);
+
+    if (await Teacher.exists(teacher)) {
+        return teacher;
+    }
+
+    throw new AuthenticationError("Invalid token");
+}
 
 
 module.exports = resolvers;

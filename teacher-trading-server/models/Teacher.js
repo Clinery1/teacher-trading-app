@@ -1,5 +1,5 @@
-const { Schema, model } = require('mongoose');
-const bcrypt = require('bcrypt');
+const { Schema, model } = require("mongoose");
+const bcrypt = require("bcrypt");
 
 // Schema to create Teacher model
 const teacherSchema = new Schema(
@@ -32,7 +32,7 @@ const teacherSchema = new Schema(
         password: {
             type: String,
             required: true,
-            minLength: 5,
+            minLength: 8,
         },
     },
     {
@@ -42,8 +42,8 @@ const teacherSchema = new Schema(
     }
 );
 
-teacherSchema.pre('save', async function (next) {
-    if (this.isNew || this.isModified('password')) {
+teacherSchema.pre("save", async function (next) {
+    if (this.isNew || this.isModified("password")) {
         const saltRounds = 10;
         this.password = await bcrypt.hash(this.password, saltRounds);
     }
@@ -56,6 +56,6 @@ teacherSchema.methods.isCorrectPassword = async function (password) {
     return bcrypt.compare(password, this.password);
 };
 
-const Teacher = model('Teacher', teacherSchema);
+const Teacher = model("Teacher", teacherSchema);
 
 module.exports = Teacher;

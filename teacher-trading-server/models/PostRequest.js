@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const postRequestSchema = new Schema(
     {
@@ -33,6 +33,6 @@ const postRequestSchema = new Schema(
     }
 );
 
-const PostRequest = model('PostRequest', postRequestSchema);
+const PostRequest = model("PostRequest", postRequestSchema);
 
 module.exports = PostRequest;

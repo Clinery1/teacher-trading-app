@@ -38,10 +38,10 @@ export default () => {
     const [formState, setFormState] = useState({count: "", shouldReload: false});
 
     const id = useParams().postId;
-    const {loading, error, data} = useQuery(POST, {variables: {id}});
+    const {loading, error, data, refetch} = useQuery(POST, {variables: {id}});
     const {loading: requestsLoading, error: requestsError, data: requestsData, refetch: refetchRequests} = useQuery(REQUESTS_FOR_POST, {variables: {id}});
 
-    const [createRequest, {error: applyError}] = useMutation(CREATE_REQUEST);
+    const [createRequest] = useMutation(CREATE_REQUEST);
     const [acceptRequestMutation, {error: acceptRequestError}] = useMutation(ACCEPT_REQUEST);
     const [denyRequestMutation, {error: denyRequestError}] = useMutation(DENY_REQUEST);
     const [removeRequestMutation, {error: removeRequestError}] = useMutation(REMOVE_REQUEST);
@@ -64,6 +64,7 @@ export default () => {
                 isClosable: true,
             });
 
+            refetch();
             refetchRequests();
         } catch (e) {
             console.error(e,acceptRequestError);

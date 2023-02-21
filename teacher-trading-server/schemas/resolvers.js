@@ -11,11 +11,10 @@ const resolvers = {
         },
 
         allPosts: async (_,{page,category}) => {
-            console.log(category);
             let teacherIds = {};
             const limit = 100;
             const skip = page*limit;
-            let query = {};
+            let query = {itemQuantity: {$gt: 0}};
             if (category) {
                 query.category = category;
             }

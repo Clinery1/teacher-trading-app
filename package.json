@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "cd teacher-trading-server && node index",
-    "heroku-postbuild": "cd ui && npm run build --omit=dev"
+    "heroku-postbuild": "cd ui && npm i && npm run build --omit=dev"
   },
   "dependencies": {
     "apollo-server-express": "^3.6.2",

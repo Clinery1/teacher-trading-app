@@ -189,7 +189,12 @@ export default () => {
     const createdAt = new Date(Number(data.post.createdAt));
     const teacher = data.post.teacher;
 
-    const postOwner = teacher._id==Auth.getProfile()._id;
+    let userId = "";
+    if (Auth.loggedIn()) {
+        userId = Auth.getProfile()._id;
+    }
+
+    let postOwner = teacher._id==userId;
 
     // console.log(data);
     // console.log(requestsData);
@@ -202,7 +207,7 @@ export default () => {
                     <Text>Posted by {teacher.first} {teacher.last} ({teacher.username}) of {teacher.school}</Text>
                     <Text>Created on {createdAt.toLocaleDateString()}</Text>
                 </CardBody>
-                {!postOwner ? (
+                {!postOwner&&Auth.loggedIn() ? (
                     <CardFooter>
                         <Flex flexDirection="column">
                             <Heading size="lg">Request supplies</Heading>

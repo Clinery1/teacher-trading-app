@@ -223,7 +223,11 @@ export default () => {
                 ):<></>}
             </Card>
             <Spacer minHeight="2ch" />
-            <Heading>Requests</Heading>
+            {requestsData.requestsForPost.length>0 ? (
+                <Heading>Requests</Heading>
+            ):(
+                <Heading>No requests</Heading>
+            )}
             <Spacer minHeight="1ch" />
             <Wrap>
                 {requestsData.requestsForPost.map(function(req) {

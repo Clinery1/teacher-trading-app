@@ -50,30 +50,34 @@ export default () => {
 
     return (
         <Flex alignItems="center" flexDirection="column">
-            <Heading>Supply listings</Heading>
-            <Spacer minHeight="3ch" />
-            <Heading>Filter by category</Heading>
-            <Spacer minHeight="1ch" />
-            <Select name="category" value={formState.category} onChange={handleChange}>
-                <option value="any">Any</option>
-                <PostCategories />
-            </Select>
-            <Spacer minHeight="3ch" />
-            <Wrap justify="center" align="top">
-                {data.allPosts.map(function(data,_) {
-                    const createdAt = new Date(Number(data.createdAt));
-                    const teacher = data.teacher;
-                    const navPoint = "/listing/"+data._id;
+            {data.allPosts.length===0 ? (
+                <Heading>No listings</Heading>
+            ):(<>
+                <Heading>Supply listings</Heading>
+                <Spacer minHeight="3ch" />
+                <Heading>Filter by category</Heading>
+                <Spacer minHeight="1ch" />
+                <Select name="category" value={formState.category} onChange={handleChange}>
+                    <option value="any">Any</option>
+                    <PostCategories />
+                </Select>
+                <Spacer minHeight="3ch" />
+                <Wrap justify="center" align="top">
+                    {data.allPosts.map(function(data,_) {
+                        const createdAt = new Date(Number(data.createdAt));
+                        const teacher = data.teacher;
+                        const navPoint = "/listing/"+data._id;
 
-                    return (<WrapItem><LinkBox><Card>
-                        <CardHeader><Heading size="lg"><LinkOverlay as={ReactLink} to={navPoint}>{data.itemQuantity} {data.itemName}</LinkOverlay></Heading></CardHeader>
-                        <CardBody>
-                            <Text>Posted by {teacher.first} {teacher.last} ({teacher.username}) of {teacher.school}</Text>
-                            <Text>Created on {createdAt.toLocaleDateString()}</Text>
-                        </CardBody>
-                    </Card></LinkBox></WrapItem>);
-                })}
-            </Wrap>
+                        return (<WrapItem><LinkBox><Card>
+                            <CardHeader><Heading size="lg"><LinkOverlay as={ReactLink} to={navPoint}>{data.itemQuantity} {data.itemName}</LinkOverlay></Heading></CardHeader>
+                            <CardBody>
+                                <Text>Posted by {teacher.first} {teacher.last} ({teacher.username}) of {teacher.school}</Text>
+                                <Text>Created on {createdAt.toLocaleDateString()}</Text>
+                            </CardBody>
+                        </Card></LinkBox></WrapItem>);
+                    })}
+                </Wrap>
+            </>)}
         </Flex>
     );
 };

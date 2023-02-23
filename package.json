@@ -1,0 +1,22 @@
+{
+  "name": "teacher-trading-server",
+  "version": "0.0.1",
+  "description": "",
+  "main": "teacher-trading-server/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "cd teacher-trading-server && node index",
+    "heroku-postbuild": "cd ui && npm run build --omit=dev"
+  },
+  "dependencies": {
+    "apollo-server-express": "^3.6.2",
+    "express": "^4.17.2",
+    "graphql": "^16.3.0",
+    "mongoose": "^6.1.8",
+    "jsonwebtoken": "^8.5.1",
+    "bcrypt": "^5.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.9"
+  }
+}

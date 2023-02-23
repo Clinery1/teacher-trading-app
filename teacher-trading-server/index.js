@@ -18,7 +18,7 @@ async function main() {
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
     app.use(express.static(path.join(__dirname, '../ui/build')));
-    app.get('/', (_, res) => {
+    app.get(["/","/[a-z]+","/[a-z]+/[A-Za-z0-9]+"], (_, res) => {
         res.sendFile(path.join(__dirname, '../ui/build/index.html'));
     });
 
